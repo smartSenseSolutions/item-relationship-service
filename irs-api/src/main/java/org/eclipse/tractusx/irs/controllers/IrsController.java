@@ -124,7 +124,7 @@ public class IrsController {
     @IrsTimer("registerjob")
     @PostMapping("/jobs")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyAuthority('" + IrsRoles.ADMIN_IRS + "', '" + IrsRoles.VIEW_IRS + "')")
+    //@PreAuthorize("hasAnyAuthority('" + IrsRoles.ADMIN_IRS + "', '" + IrsRoles.VIEW_IRS + "')")
     public JobHandle registerJobForGlobalAssetId(final @Valid @RequestBody RegisterJob request) {
         return itemJobService.registerItemJob(request);
     }
