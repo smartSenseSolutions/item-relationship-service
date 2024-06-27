@@ -11,17 +11,17 @@ spring:
         registration:
           semantics:
             authorization-grant-type: client_credentials
-            client-id: ${SEMANTICS_OAUTH2_CLIENT_ID} # Semantic Hub OAuth2 client ID used to authenticate with the IAM
-            client-secret: ${SEMANTICS_OAUTH2_CLIENT_SECRET} # Semantic Hub OAuth2 client secret used to authenticate with the IAM
+            client-id: ${SEMANTICS_OAUTH2_CLIENT_ID:irs_backend} # Semantic Hub OAuth2 client ID used to authenticate with the IAM
+            client-secret: ${SEMANTICS_OAUTH2_CLIENT_SECRET:XzYJjAb4pHvLMZPzHwZQVWEpgOt6CRHG} # Semantic Hub OAuth2 client secret used to authenticate with the IAM
           discovery:
             authorization-grant-type: client_credentials
-            client-id: ${DISCOVERY_OAUTH2_CLIENT_ID} # Dataspace Discovery OAuth2 client ID used to authenticate with the IAM
-            client-secret: ${DISCOVERY_OAUTH2_CLIENT_SECRET} # Dataspace Discovery OAuth2 client secret used to authenticate with the IAM
+            client-id: ${DISCOVERY_OAUTH2_CLIENT_ID:sa1} # Dataspace Discovery OAuth2 client ID used to authenticate with the IAM
+            client-secret: ${DISCOVERY_OAUTH2_CLIENT_SECRET:I6xSuoG6k4R9IzmOsWgyGVqX7ed3PMxf} # Dataspace Discovery OAuth2 client secret used to authenticate with the IAM
         provider:
           semantics:
-            token-uri: ${SEMANTICS_OAUTH2_CLIENT_TOKEN_URI:https://default} # OAuth2 endpoint to request tokens using the client credentials
+            token-uri: ${SEMANTICS_OAUTH2_CLIENT_TOKEN_URI:https://centralidp.cx.the-sense.io/auth/realms/CX-Central/protocol/openid-connect/token} # OAuth2 endpoint to request tokens using the client credentials
           discovery:
-            token-uri: ${DISCOVERY_OAUTH2_CLIENT_TOKEN_URI:https://default} # OAuth2 endpoint to request tokens using the client credentials
+            token-uri: ${DISCOVERY_OAUTH2_CLIENT_TOKEN_URI:https://centralidp.cx.the-sense.io/auth/realms/CX-Central/protocol/openid-connect/token} # OAuth2 endpoint to request tokens using the client credentials
 
 management: # Spring management API config, see https://spring.io/guides/gs/centralized-configuration/
   endpoints:
@@ -90,20 +90,20 @@ irs: # Application config
   security:
     api:
       keys:
-        admin: ${API_KEY_ADMIN}  # API Key to access IRS API with admin role
-        regular: ${API_KEY_REGULAR}  # API Key to access IRS API with view role
+        admin: ${API_KEY_ADMIN:password}  # API Key to access IRS API with admin role
+        regular: ${API_KEY_REGULAR:password}  # API Key to access IRS API with view role
 
 blobstore:
-  endpoint: "${MINIO_URL}" # S3 compatible API endpoint (e.g. Minio)
-  accessKey: "${MINIO_ACCESS_KEY}" # S3 access key
-  secretKey: "${MINIO_SECRET_KEY}" # S3 secret key
+  endpoint:  http://localhost:9000
+  accessKey: minioadmin
+  secretKey: minioadmin
   bucketName: irsbucket # the name of the S3 bucket to be created / used by the IRS
 
 policystore:
   persistence:
-    endpoint: "${MINIO_URL}" # S3 compatible API endpoint (e.g. Minio)
-    accessKey: "${MINIO_ACCESS_KEY}" # S3 access key
-    secretKey: "${MINIO_SECRET_KEY}" # S3 secret key
+    endpoint: http://localhost:9000
+    accessKey: minioadmin
+    secretKey: minioadmin
     bucketName: irs-policy-bucket # the name of the S3 bucket to be created / used by the policy store
     daysToLive: -1 # number of days to keep policies in the store, use -1 to disable cleanup
 
@@ -125,7 +125,7 @@ resilience4j:
 irs-edc-client:
   callback:
     mapping: /internal/endpoint-data-reference  # The callback endpoint mapping
-  callback-url: ${EDC_TRANSFER_CALLBACK_URL:} # The URL where the EDR token callback will be sent to.
+  callback-url: ${EDC_TRANSFER_CALLBACK_URL:http://localhost:8880} # The URL where the EDR token callback will be sent to.
   asyncTimeout: PT10M # Timout for future.get requests as ISO 8601 Duration
   controlplane:
     request-ttl: ${EDC_CONTROLPLANE_REQUEST_TTL:PT10M} # How long to wait for an async EDC negotiation request to finish, ISO 8601 Duration
@@ -139,8 +139,8 @@ irs-edc-client:
     catalog-limit: ${EDC_CONTROLPLANE_CATALOG_LIMIT:1000} # Max number of items to fetch from the EDC provider catalog
     catalog-page-size: ${EDC_CONTROLPLANE_CATALOG_PAGE_SIZE:50} # Number of items to fetch at one page from the EDC provider catalog when using pagination
     api-key:
-      header: ${EDC_API_KEY_HEADER:} # API header key to use in communication with the EDC consumer controlplane
-      secret: ${EDC_API_KEY_SECRET:} # API header secret to use in communication with the EDC consumer controlplane
+      header: ${EDC_API_KEY_HEADER:smartSense} # API header key to use in communication with the EDC consumer controlplane
+      secret: ${EDC_API_KEY_SECRET:smartSense} # API header secret to use in communication with the EDC consumer controlplane
     datareference:
       storage:
         duration: PT1H # Time after which stored data references will be cleaned up, ISO 8601 Duration
@@ -169,8 +169,8 @@ irs-edc-client:
 
 digitalTwinRegistry:
   type: ${DIGITALTWINREGISTRY_TYPE:decentral} # The type of DTR. This can be either "central" or "decentral". If "decentral", descriptorEndpoint, shellLookupEndpoint and oAuthClientId is not required.
-  descriptorEndpoint: ${DIGITALTWINREGISTRY_DESCRIPTOR_URL:} # The endpoint to retrieve AAS descriptors from the DTR, must contain the placeholder {aasIdentifier}
-  shellLookupEndpoint: ${DIGITALTWINREGISTRY_SHELL_LOOKUP_URL:} # The endpoint to lookup shells from the DTR, must contain the placeholder {assetIds}
+  descriptorEndpoint: ${DIGITALTWINREGISTRY_DESCRIPTOR_URL:https://dtr.cx.the-sense.io} # The endpoint to retrieve AAS descriptors from the DTR, must contain the placeholder {aasIdentifier}
+  shellLookupEndpoint: ${DIGITALTWINREGISTRY_SHELL_LOOKUP_URL:/shell-descriptors/{aasIdentifier}} # The endpoint to lookup shells from the DTR, must contain the placeholder {assetIds}
   shellDescriptorTemplate: ${DIGITALTWINREGISTRY_SHELL_DESCRIPTOR_TEMPLATE:/shell-descriptors/{aasIdentifier}} # The path to retrieve AAS descriptors from the decentral DTR, must contain the placeholder {aasIdentifier}
   lookupShellsTemplate: ${DIGITALTWINREGISTRY_QUERY_SHELLS_PATH:/lookup/shells?assetIds={assetIds}} # The path to lookup shells from the decentral DTR, must contain the placeholder {assetIds}
   oAuthClientId: discovery # ID of the OAuth2 client registration to use, see config spring.security.oauth2.client
@@ -179,7 +179,7 @@ digitalTwinRegistry:
     connect: PT90S # HTTP connect timeout for the digital twin registry client
   discovery:
     oAuthClientId: discovery # ID of the OAuth2 client registration to use, see config spring.security.oauth2.client
-    discoveryFinderUrl: ${DIGITALTWINREGISTRY_DISCOVERY_FINDER_URL:} # The endpoint to discover EDC endpoints to a particular BPN.
+    discoveryFinderUrl: ${DIGITALTWINREGISTRY_DISCOVERY_FINDER_URL:https://discoveryfinder.cx.the-sense.io/} # The endpoint to discover EDC endpoints to a particular BPN.
     timeout:
       read: PT90S # HTTP read timeout for the discovery client
       connect: PT90S # HTTP connect timeout for the discovery client
