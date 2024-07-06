@@ -1,0 +1,71 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/smartsensesolutions/item-relationship-service
+  pullPolicy: IfNotPresent
+  tag: local-fix
+
+#####################
+# IRS Configuration #
+#####################
+irsUrl: "https://irs.cx.the-sense.io"  # "https://<irs-url>"
+bpn:  "BPNL0000000009T3"  # BPN for this IRS instance; only users with this BPN are allowed to access the API
+apiKeyAdmin: "<path:irs/data/api-key#admin>"  # <api-key-admin> Admin auth key, Should be changed!
+apiKeyRegular: "<path:irs/data/api-key#regular>"  # <api-key-regular> View auth key, Should be changed!
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  tls:
+    - secretName: "irs-tls"
+      hosts:
+        - "irs.cx.the-sense.io"
+  hosts:
+      - host: "irs.cx.the-sense.io"
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+
+digitalTwinRegistry:
+  type: decentral  # The type of DTR. This can be either "central" or "decentral". If "decentral", descriptorEndpoint, shellLookupEndpoint and oAuthClientId is not required.
+  url: https://dtr.cx.the-sense.io/semantics/registry/
+  oAuthClientId: discovery
+
+discovery:
+  oAuthClientId: discovery  # ID of the OAuth2 client registration to use, see config spring.security.oauth2.client
+  discoveryFinderUrl:  "https://discoveryfinder.cx.the-sense.io" # "https://<discovery-finder-url>
+
+minioUser: "<path:irs/data/minio#accessKey>"
+minioPassword: "<path:irs/data/minio#secretKey>"
+minioUrl: "http://minio.minio:9000"
+oauth2:
+  clientTokenUri: "https://centralidp.cx.the-sense.io/auth/realms/CX-Central/protocol/openid-connect/token"
+  semantics:
+    clientId: "<path:irs/data/oauth#semantics_client_id>" # <semantics-client-id>
+    clientSecret: "<path:irs/data/oauth#semantics_client_secret>" # <semantics-client-secret>
+  discovery:
+    clientId: "<path:irs/data/oauth#discovery_client_id>" # <discovery-client-id>
+    clientSecret: "<path:irs/data/oauth#discovery_client_secret>" # <discovery-client-secret>
+edc:
+  controlplane:
+    endpoint:
+      data: "https://edc-controlplane.smartsense.the-sense.io"  # <edc-controlplane-endpoint-data>
+    apikey:
+      header: "X-Api-Key"  # Name of the EDC api key header field
+      secret: "<path:irs/data/api-key#x-api-key>"  # <edc-api-key>
+
+ess:
+  edc:
+    host: "https://edc-controlplane.smartsense.the-sense.io" # EDC base URL - used for creation of EDC assets for ESS notifications and as sender EDC for sent notifications
+
+
+minio:
+  enabled: false
+
+
+prometheus:
+  enabled: false
+
+
+grafana:
+  enabled: false 
